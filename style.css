@@ -1,0 +1,339 @@
+/* ===========================================================
+   NEXO STORE — estilos compartidos (tienda + panel admin)
+   Se cargan con <link rel="stylesheet" href="style.css">
+   =========================================================== */
+
+html {
+  overflow-x: hidden;
+}
+body {
+  background-color: #08050f;
+  overflow-x: hidden;
+  width: 100%;
+}
+img {
+  max-width: 100%;
+}
+
+/* Corte de esquinas estilo "cyberpunk" — usado en cards, modales, botones y badges */
+.clip-corner {
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+
+/* Resplandor violeta/cian sutil para paneles y modales */
+.glow-border {
+  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.25), 0 0 24px -8px rgba(79, 242, 255, 0.15);
+}
+.glow-border:hover {
+  box-shadow: 0 0 0 1px rgba(79, 242, 255, 0.5), 0 0 30px -6px rgba(145, 70, 255, 0.4);
+}
+
+/* Fondo con grilla tenue (hero de la tienda) */
+.grid-veins {
+  background-image:
+    linear-gradient(rgba(145, 70, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(145, 70, 255, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+/* Utilidad para mostrar/ocultar modales y bloques */
+.hidden-modal {
+  display: none !important;
+}
+
+/* Selects sin flecha nativa del navegador */
+select.estado-select {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* Selección de texto */
+::selection {
+  background: #9146ff;
+  color: #08050f;
+}
+
+/* Scrollbar (desktop) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #08050f;
+}
+::-webkit-scrollbar-thumb {
+  background: #241a3d;
+  border-radius: 4px;
+}
+
+/* Tira de chips de plataformas (mobile, sin scrollbar visible) */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.chip {
+  scroll-snap-align: start;
+}
+.chip.chip-activo {
+  background: linear-gradient(to right, #9146ff, #4ff2ff);
+  color: #08050f;
+  border-color: transparent;
+}
+
+/* Filas de tabla (panel admin) */
+tbody tr {
+  border-bottom: 1px solid #241a3d;
+}
+
+/* Tabs del panel admin */
+.tab-btn {
+  padding: 0.55rem 1.1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid #241a3d;
+  background: #0f0a1c;
+  color: #8b80ab;
+  transition: all 0.15s;
+}
+.tab-btn.tab-activo {
+  background: linear-gradient(to right, #9146ff, #4ff2ff);
+  color: #08050f;
+  border-color: transparent;
+}
+
+/* Badges tipo toggle (visible/oculto, con stock/sin stock) */
+.toggle-btn {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 2px;
+  border: 1px solid;
+  transition: color 0.15s, background-color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.toggle-on {
+  background: rgba(79, 255, 160, 0.1);
+  border-color: rgba(79, 255, 160, 0.5);
+  color: #4fffa0;
+}
+.toggle-off {
+  background: rgba(255, 95, 126, 0.1);
+  border-color: rgba(255, 95, 126, 0.5);
+  color: #ff5f7e;
+}
+
+/* ===========================================================
+   Ajustes responsive (mobile)
+   =========================================================== */
+@media (max-width: 767px) {
+  /* Corte de esquina más chico en mobile para que no coma tanto texto en badges pequeños */
+  .clip-corner {
+    clip-path: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  }
+
+  /* Los contadores del panel admin y la tira de filtros no deben forzar scroll horizontal */
+  #tab-pedidos .flex.flex-wrap,
+  #tab-productos .flex.flex-wrap {
+    row-gap: 0.6rem;
+  }
+}
+
+/* ===========================================================
+   Refuerzo "a prueba de fallos" para lo esencial del layout.
+   No depende de que Tailwind termine de aplicar sus clases —
+   si por lo que sea tarda o no corre en algún celular/red, esto
+   garantiza que la grilla de productos y la tira de plataformas
+   sigan funcionando igual.
+   =========================================================== */
+#grid-streaming {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+@media (min-width: 640px) {
+  #grid-streaming { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+}
+@media (min-width: 1024px) {
+  #grid-streaming { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+}
+#grid-streaming > * {
+  min-width: 0 !important; /* evita que una imagen/texto largo empuje la columna y rompa las 2 columnas */
+}
+
+#chips-plataforma {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+#chips-plataforma .chip {
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+}
+
+/* ===========================================================
+   Tarjeta de producto — CSS propio (no utilidades de Tailwind),
+   inspirado en las .pack-card de settings.sbs, para que el look
+   y el layout no dependan de que el CDN de Tailwind cargue a
+   tiempo en el celular.
+   =========================================================== */
+.pack-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #0f0a1c;
+  border-radius: 4px;
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  box-shadow: 0 0 0 1px rgba(145, 70, 255, 0.35), 0 0 22px -10px rgba(79, 242, 255, 0.35);
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.pack-card:active {
+  transform: scale(0.98);
+}
+.pack-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  background: linear-gradient(135deg, rgba(79, 242, 255, 0.55), rgba(145, 70, 255, 0) 40%, rgba(145, 70, 255, 0) 60%, rgba(145, 70, 255, 0.5));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+.pack-card__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #150e28;
+}
+.pack-card__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pack-card__fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(145, 70, 255, 0.25), rgba(79, 242, 255, 0.1));
+}
+.pack-card__fallback span {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 2px solid rgba(145, 70, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  color: #4ff2ff;
+  font-size: 1.1rem;
+}
+.pack-card__stock-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  background: rgba(255, 95, 126, 0.92);
+  color: #fff;
+  font-family: 'Chakra Petch', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 9px;
+  border-radius: 3px;
+}
+.pack-card--oos .pack-card__media {
+  filter: grayscale(0.6) brightness(0.6);
+}
+.pack-card__body {
+  padding: 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+.pack-card__title {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  line-height: 1.2;
+  font-size: 1rem;
+  color: #ece6fa;
+  margin: 0 0 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pack-card__detail {
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #8b80ab;
+  margin: 0 0 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pack-card__price-row {
+  margin-top: auto;
+  margin-bottom: 10px;
+}
+.pack-card__price {
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #4ff2ff;
+}
+.pack-card__buy {
+  display: block;
+  width: 100%;
+  text-align: center;
+  padding: 9px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  color: #c9a3ff;
+  background: transparent;
+  border: 1px solid #9146ff;
+  border-radius: 2px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.pack-card__buy:hover:not(:disabled) {
+  background: #9146ff;
+  color: #08050f;
+}
+.pack-card__buy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  border-color: #241a3d;
+  color: #8b80ab;
+}
+
+@media (max-width: 639px) {
+  .pack-card__body { padding: 11px 11px 13px; }
+  .pack-card__title { font-size: 0.88rem; margin-bottom: 4px; }
+  .pack-card__detail { font-size: 0.7rem; margin-bottom: 8px; }
+  .pack-card__price { font-size: 0.92rem; }
+  .pack-card__buy { padding: 8px; font-size: 0.76rem; }
+}
+
+.grid-empty-msg {
+  grid-column: 1 / -1;
+  color: #8b80ab;
+  font-size: 0.85rem;
+}

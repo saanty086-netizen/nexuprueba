@@ -273,6 +273,14 @@
         </div>
       </section>
 
+      <footer class="mt-10 pt-6 border-t border-line pb-24 md:pb-6">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-mute/70">
+          <span>© NEXO STORE</span>
+          <a href="legal.html#terminos" class="hover:text-cyan transition-colors">Términos y condiciones</a>
+          <a href="legal.html#privacidad" class="hover:text-cyan transition-colors">Privacidad</a>
+        </div>
+      </footer>
+
     </div>
   </main>
 </div>
@@ -910,6 +918,35 @@
     const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
     window.location.href = url;
   });
+</script>
+
+<!-- ============ AVISO DE COOKIES (mini) ============ -->
+<div id="cookie-banner" class="hidden-modal fixed inset-x-0 bottom-0 z-[60] p-3 md:p-4">
+  <div class="glass border border-line max-w-2xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 clip-corner">
+    <p class="text-[11px] text-mute leading-relaxed flex-1">
+      Usamos cookies básicas para que el sitio funcione bien y para estadísticas de uso.
+      <a href="legal.html#privacidad" class="text-cyan hover:underline">Más info</a>.
+    </p>
+    <button id="btn-cookie-ok"
+      class="shrink-0 text-[11px] font-display font-semibold px-4 py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
+      Entendido
+    </button>
+  </div>
+</div>
+<script>
+  (function () {
+    const KEY = "nexo_cookies_ok";
+    const banner = document.getElementById("cookie-banner");
+    const btn = document.getElementById("btn-cookie-ok");
+    if (!banner || !btn) return;
+    if (!localStorage.getItem(KEY)) {
+      banner.classList.remove("hidden-modal");
+    }
+    btn.addEventListener("click", () => {
+      localStorage.setItem(KEY, "1");
+      banner.classList.add("hidden-modal");
+    });
+  })();
 </script>
 </body>
 </html>

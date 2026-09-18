@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEXO STORE — Streaming y seguidores</title>
+<link rel="icon" href="favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg: '#08050f',
+          panel: '#0f0a1c',
+          panel2: '#150e28',
+          line: '#241a3d',
+          violet: '#9146ff',
+          violet2: '#c9a3ff',
+          cyan: '#4ff2ff',
+          ink: '#ece6fa',
+          mute: '#8b80ab',
+          bad: '#ff5f7e'
+        },
+        fontFamily: {
+          display: ['"Chakra Petch"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace']
+        }
+      }
+    }
+  };
+</script>
+<style>
+  html { overflow-x: hidden; }
+  body { background-color: #08050f; overflow-x: hidden; max-width: 100vw; }
+  h1, h2, h3, p, span, a, button, label { overflow-wrap: break-word; word-break: break-word; }
+  img, svg { max-width: 100%; }
+  * { min-width: 0; }
+  .glow-border { box-shadow: 0 0 0 1px rgba(145,70,255,0.25), 0 0 24px -8px rgba(79,242,255,0.15); }
+  .glow-border:hover { box-shadow: 0 0 0 1px rgba(79,242,255,0.5), 0 0 30px -6px rgba(145,70,255,0.4); }
+  .glass { background: rgba(15,10,28,0.55); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+
+  /* ============ gem-card: corte de diamante, como settingstore/1 ============ */
+  .gem-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    border-radius: 4px;
+    transition: box-shadow .3s ease, border-color .3s ease, transform .2s ease;
+  }
+  .gem-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%);
+    background: linear-gradient(135deg, rgba(79,242,255,.55), rgba(145,70,255,0) 40%, rgba(145,70,255,0) 60%, rgba(145,70,255,.5));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .pack-card__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: radial-gradient(80% 80% at 50% 30%, rgba(145,70,255,0.14), transparent 70%), #150e28;
+  }
+  .pack-card__media img { width: 100%; height: 100%; object-fit: cover; }
+  .pack-card__body { padding: 14px 14px 16px; display: flex; flex-direction: column; flex: 1; }
+  .pack-card__title {
+    font-family: 'Chakra Petch', sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+    font-size: 1.02rem;
+    color: #ece6fa;
+    margin: 0 0 6px;
+  }
+  .pack-card__detail { font-size: 0.78rem; color: #8b80ab; margin: 0 0 10px; }
+  .pack-card__price-row { margin-bottom: 12px; margin-top: auto; }
+  .pack-card__price { font-family: 'Chakra Petch', sans-serif; font-weight: 700; font-size: 1.15rem; color: #4ff2ff; }
+  .pack-card__buy {
+    width: 100%;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    font-size: 0.8rem;
+    padding: 10px 14px;
+    min-height: 42px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #9146ff;
+    color: #c9a3ff;
+    background: transparent;
+    transition: background-color .15s ease, color .15s ease;
+  }
+  .pedir-fija {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 96px;
+    min-height: 36px;
+    box-sizing: border-box;
+    text-align: center;
+  }
+  .pack-card__buy:hover:not(:disabled) { background: #9146ff; color: #08050f; }
+  .pack-card__buy:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: #241a3d;
+    color: #8b80ab;
+  }
+  .stock-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 2;
+    background: rgba(15,10,28,0.92);
+    color: #ff5f7e;
+    border: 1px solid rgba(255,95,126,0.5);
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+  .pack-card--oos .pack-card__media { filter: grayscale(0.5) brightness(0.65); }
+
+  @media (max-width: 639px) {
+    .pack-card__body { padding: 10px 10px 12px; }
+    .pack-card__title { font-size: 0.92rem; margin-bottom: 4px; }
+    .pack-card__detail { font-size: 0.7rem; margin-bottom: 8px; }
+    .pack-card__price { font-size: 1rem; }
+    .pack-card__buy { padding: 9px 10px; font-size: 0.74rem; min-height: 38px; }
+    .pedir-fija { width: 84px; min-height: 34px; }
+    .stock-badge { font-size: 8px; padding: 3px 7px; }
+  }
+  .grid-veins {
+    background-image:
+      linear-gradient(rgba(145,70,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(145,70,255,0.06) 1px, transparent 1px);
+    background-size: 42px 42px;
+  }
+  .clip-corner {
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+  .hidden-modal { display: none !important; }
+  ::selection { background: #9146ff; color: #08050f; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: #08050f; }
+  ::-webkit-scrollbar-thumb { background: #241a3d; border-radius: 4px; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+  .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+  .chip { scroll-snap-align: start; }
+  .chip.chip-activo { background: linear-gradient(to right, #9146ff, #4ff2ff); color: #08050f; border-color: transparent; }
+</style>
+</head>
+<body class="font-mono text-ink min-h-screen">
+
+<div class="flex min-h-screen">
+
+  <!-- ============ SIDEBAR (desktop) ============ -->
+  <aside class="hidden md:flex md:flex-col md:w-64 shrink-0 border-r border-line bg-panel px-6 py-8">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="w-11 h-11 rounded-full border-2 border-violet overflow-hidden glow-border shrink-0">
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="44" height="44" loading="eager" />
+      </div>
+      <div>
+        <p class="font-display font-bold text-lg leading-none tracking-wide">NEXO</p>
+        <p class="text-[10px] text-mute tracking-[0.2em] mt-1">STORE</p>
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-1 text-sm">
+      <a href="#inicio" class="px-3 py-2 rounded hover:bg-panel2 hover:text-cyan transition-colors">Inicio</a>
+      <a href="#streaming" class="px-3 py-2 rounded hover:bg-panel2 hover:text-cyan transition-colors">Streaming</a>
+      <a href="#seguidores" class="px-3 py-2 rounded hover:bg-panel2 hover:text-cyan transition-colors">Seguidores</a>
+    </nav>
+
+    <div class="mt-auto pt-8 border-t border-line">
+      <p class="text-xs text-mute leading-relaxed">Pagás por WhatsApp, activamos apenas confirmamos. Sin vueltas.</p>
+      <a href="admin/" class="block mt-4 text-[11px] text-mute/70 hover:text-mute transition-colors">Acceso interno</a>
+    </div>
+  </aside>
+
+  <!-- ============ TOPBAR fijo (mobile) ============ -->
+  <header class="md:hidden fixed top-0 inset-x-0 z-40 h-14 flex items-center justify-between px-4 bg-[#08050f]/95 backdrop-blur border-b border-line">
+    <div class="flex items-center gap-2">
+      <div class="w-8 h-8 rounded-full border-2 border-violet overflow-hidden shrink-0">
+        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="32" height="32" loading="eager" />
+      </div>
+      <span class="font-display font-bold text-sm tracking-wide">NEXO STORE</span>
+    </div>
+    <a href="admin/" aria-label="Acceso interno"
+      class="w-9 h-9 flex items-center justify-center rounded-full border border-line text-mute hover:text-cyan hover:border-cyan transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-4 h-4">
+        <circle cx="12" cy="8" r="3.2" />
+        <path d="M4.5 20c1.2-3.4 4-5.2 7.5-5.2s6.3 1.8 7.5 5.2" stroke-linecap="round" />
+      </svg>
+    </a>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main class="flex-1 grid-veins pt-14 md:pt-0">
+
+    <!-- Tira de plataformas — scroll táctil, tipo app -->
+    <div class="md:hidden sticky top-14 z-30 bg-[#08050f]/95 backdrop-blur border-b border-line">
+      <div id="chips-plataforma" class="flex overflow-x-auto gap-2.5 py-3 px-4 scrollbar-none snap-x"></div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-4 md:px-10 pt-7 md:pt-16 pb-24">
+
+      <!-- Hero -->
+      <section id="inicio" class="mb-9 md:mb-16">
+        <p class="text-cyan text-xs tracking-[0.25em] font-semibold mb-3">CATÁLOGO NEXO</p>
+        <h1 class="font-display font-bold text-3xl leading-tight md:text-6xl md:leading-[1.05] tracking-tight">
+          Streaming y seguidores,<br class="hidden md:block" />
+          <span class="text-violet2">sin esperar hasta mañana.</span>
+        </h1>
+        <p class="text-mute mt-4 max-w-md text-sm leading-relaxed">
+          Elegís el servicio, mandás el pedido por WhatsApp y coordinamos el pago. Activación apenas se confirma.
+        </p>
+      </section>
+
+      <!-- Buscador -->
+      <div class="mb-9 md:mb-12">
+        <input id="input-buscar-catalogo" type="text" placeholder="Buscar producto... (ej: Netflix, 500 seguidores)"
+          class="w-full bg-panel2 border border-line px-4 py-3.5 text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+      </div>
+
+      <!-- Streaming -->
+      <section id="streaming" class="mb-9 md:mb-16">
+        <div class="flex items-baseline justify-between flex-wrap gap-x-2 gap-y-1 mb-4">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Streaming</h2>
+          <span class="text-[11px] text-mute">Cuentas y perfiles, 30 días</span>
+        </div>
+        <div id="grid-streaming" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6"></div>
+      </section>
+
+      <!-- Seguidores -->
+      <section id="seguidores" class="mb-6">
+        <div class="flex items-baseline justify-between flex-wrap gap-x-2 gap-y-1 mb-4">
+          <h2 class="font-display font-semibold text-lg md:text-xl text-violet2">Seguidores Instagram</h2>
+          <span class="text-[11px] text-mute">Entrega gradual, cuentas activas</span>
+        </div>
+        <div class="border border-line bg-panel clip-corner overflow-x-auto">
+          <table class="w-full text-sm min-w-[480px]">
+            <thead>
+              <tr class="text-left text-[11px] text-mute border-b border-line">
+                <th class="px-4 py-3 font-medium">Paquete</th>
+                <th class="px-4 py-3 font-medium hidden sm:table-cell">Detalle</th>
+                <th class="px-4 py-3 font-medium">Precio</th>
+                <th class="px-4 py-3 font-medium text-right">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-seguidores"></tbody>
+          </table>
+          <p id="tabla-seguidores-vacio" class="hidden-modal text-center text-mute text-xs py-10">Sin paquetes disponibles por el momento.</p>
+        </div>
+      </section>
+
+      <footer class="mt-10 pt-6 border-t border-line pb-24 md:pb-6">
+        <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] text-mute/70">
+          <span>© NEXO STORE</span>
+          <a href="legal/#terminos" class="hover:text-cyan transition-colors">Términos y condiciones</a>
+          <a href="legal/#privacidad" class="hover:text-cyan transition-colors">Privacidad</a>
+        </div>
+      </footer>
+
+    </div>
+  </main>
+</div>
+
+<!-- ============ MODAL: PEDIDO RÁPIDO ============ -->
+<div id="modal-pedido" class="hidden-modal fixed inset-0 z-50 items-center justify-center p-0 sm:p-4 bg-bg/85 backdrop-blur-sm">
+  <div class="w-full h-full sm:h-auto sm:max-w-sm bg-panel border-0 sm:border sm:border-line sm:clip-corner sm:glow-border p-6 pt-8 relative overflow-y-auto flex flex-col justify-center">
+    <button data-close-modal class="absolute top-5 right-5 text-mute hover:text-cyan text-lg leading-none">✕</button>
+
+    <div class="w-full max-w-sm mx-auto">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">PEDIDO RÁPIDO</p>
+      <h3 class="font-display font-bold text-2xl sm:text-xl mb-6 sm:mb-5">Confirmá tus datos</h3>
+
+      <div id="resumen-producto" class="mb-6 sm:mb-5 px-4 py-3.5 bg-panel2 border border-line text-sm">
+        <p id="resumen-nombre" class="text-ink font-semibold"></p>
+        <p id="resumen-precio" class="text-cyan font-display font-bold text-lg mt-1"></p>
+        <p id="resumen-precio-descuento" class="hidden-modal text-cyan font-display font-bold text-sm mt-1"></p>
+        <div id="resumen-cupon" class="hidden-modal mt-2 pt-2 border-t border-line text-xs">
+          <p class="flex justify-between text-mute"><span>Cupón</span><span id="resumen-cupon-monto" class="text-ok"></span></p>
+          <p class="flex justify-between font-display font-bold text-sm text-ink mt-1"><span>Total con cupón</span><span id="resumen-cupon-total" class="text-cyan"></span></p>
+        </div>
+      </div>
+
+      <form id="form-pedido" class="flex flex-col gap-5 sm:gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Nombre completo</label>
+          <input required id="input-nombre" type="text" placeholder="Como te llamás"
+            class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <div>
+          <label class="text-xs text-mute block mb-2 sm:mb-1.5">Código de descuento o cupón (opcional)</label>
+          <div class="flex gap-2">
+            <input id="codigoDescuento" type="text" placeholder="Ingresa tu código o cupón"
+              class="flex-1 min-w-0 bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+            <button type="button" id="btn-aplicar-descuento"
+              class="shrink-0 border border-violet text-violet2 text-xs font-display font-semibold px-4 whitespace-nowrap hover:bg-violet hover:text-bg transition-colors">
+              Aplicar
+            </button>
+          </div>
+          <p id="descuento-status" class="text-xs text-mute min-h-[1rem] mt-1.5"></p>
+        </div>
+
+        <div id="campos-seguidor" class="hidden-modal flex-col gap-5 sm:gap-4">
+          <div>
+            <label class="text-xs text-mute block mb-2 sm:mb-1.5">Link o usuario de tu cuenta</label>
+            <input id="input-link-cuenta" type="text" placeholder="https://instagram.com/tuusuario"
+              class="w-full bg-panel2 border border-line px-3.5 py-3.5 sm:py-2.5 text-base sm:text-sm text-ink placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+          </div>
+          <div class="bg-yellow-500/10 border border-yellow-500/40 text-yellow-300 text-xs sm:text-sm rounded px-3.5 py-3 leading-relaxed">
+            ⚠️ Importante: Tu perfil debe ser PÚBLICO o no llegarán los seguidores
+          </div>
+        </div>
+
+        <p id="pedido-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <label class="flex items-start gap-2.5 text-xs text-mute leading-relaxed cursor-pointer select-none">
+          <input required id="input-acepta-terminos" type="checkbox"
+            class="mt-0.5 w-4 h-4 shrink-0 accent-violet cursor-pointer" />
+          <span>
+            Leí y acepto los
+            <a href="legal/#terminos" target="_blank" class="text-cyan hover:underline">Términos y condiciones</a>.
+          </span>
+        </label>
+
+        <button type="submit" id="btn-confirmar"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-4 sm:py-3 mt-1 hover:opacity-90 transition-opacity">
+          Confirmar y abrir WhatsApp
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TEMPLATE: TARJETA DE PRODUCTO (gem-card, base settingstore/1) ============ -->
+<template id="tpl-producto">
+  <article class="gem-card pack-card glass glow-border relative" data-field="card">
+    <div data-field="badge-stock" class="hidden-modal stock-badge">SIN EXISTENCIAS</div>
+    <div class="pack-card__media" data-field="imagen-wrap">
+      <img data-field="imagen" class="hidden-modal absolute inset-0 w-full h-full object-cover" />
+      <div data-field="imagen-fallback" class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-violet/25 via-panel2 to-cyan/10">
+        <div class="w-12 h-12 rounded-full border-2 border-violet/70 overflow-hidden">
+          <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="48" height="48" loading="lazy" />
+        </div>
+      </div>
+    </div>
+    <div class="pack-card__body">
+      <h3 class="pack-card__title" data-field="nombre"></h3>
+      <p class="pack-card__detail" data-field="descripcion"></p>
+      <div class="pack-card__price-row">
+        <span class="pack-card__price" data-field="precio"></span>
+      </div>
+      <button data-field="btn" class="pack-card__buy">Pedir</button>
+    </div>
+  </article>
+</template>
+
+<!-- ============ TEMPLATE: FILA TABLA SEGUIDORES ============ -->
+<template id="tpl-seguidor-fila">
+  <tr class="hover:bg-panel2/60 transition-colors align-middle border-b border-line last:border-b-0">
+    <td class="px-4 py-3 font-semibold" data-field="nombre"></td>
+    <td class="px-4 py-3 text-mute text-xs hidden sm:table-cell" data-field="descripcion"></td>
+    <td class="px-4 py-3 text-cyan font-display font-bold whitespace-nowrap" data-field="precio"></td>
+    <td class="px-4 py-3 text-right">
+      <button data-field="btn"
+        class="pedir-fija text-[11px] font-semibold border border-violet text-violet2 px-3 py-2 hover:bg-violet hover:text-bg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:border-line disabled:text-mute disabled:hover:bg-transparent">
+        Pedir
+      </button>
+    </td>
+  </tr>
+</template>
+
+<script type="module">
+  // -----------------------------
+  // Firebase — SDK modular v10
+  // -----------------------------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    doc,
+    getDoc,
+    addDoc,
+    updateDoc,
+    increment,
+    onSnapshot,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD16l3a-H3llIYRK_7La-3IUiCIM7uRi3k",
+    authDomain: "nexo-aeb5a.firebaseapp.com",
+    databaseURL: "https://nexo-aeb5a-default-rtdb.firebaseio.com",
+    projectId: "nexo-aeb5a",
+    storageBucket: "nexo-aeb5a.firebasestorage.app",
+    messagingSenderId: "553737684793",
+    appId: "1:553737684793:web:0267a5bbfbc2c0c575cae8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const pedidosRef = collection(db, "pedidos_nexo");
+  const productosRef = collection(db, "productos");
+  const configuracionRef = doc(db, "configuracion", "descuento");
+  const cuponesRef = collection(db, "cupones");
+
+  // -----------------------------
+  // Cupones de descuento (multi-uso) — doc ID = código en mayúsculas
+  // (cupones/{CODIGO}). Se gestionan desde admin.html, solapa "Cupones".
+  // Esto es independiente del código de descuento único de Finanzas.
+  // -----------------------------
+  async function validarCupon(codigoInput, subtotal) {
+    const codigo = (codigoInput || "").trim().toUpperCase();
+    if (!codigo) return { valid: false, reason: "EMPTY" };
+
+    const snap = await getDoc(doc(db, "cupones", codigo));
+    if (!snap.exists()) return { valid: false, reason: "NOT_FOUND" };
+
+    const c = snap.data();
+    if (c.active === false) return { valid: false, reason: "INACTIVE" };
+    if (c.validUntil && new Date(c.validUntil + "T23:59:59") < new Date()) {
+      return { valid: false, reason: "EXPIRED" };
+    }
+    if ((c.usedCount || 0) >= c.usageLimit) return { valid: false, reason: "LIMIT" };
+
+    let discountAmount = c.discountType === "percentage" ? subtotal * (c.value / 100) : c.value;
+    discountAmount = Math.min(discountAmount, subtotal);
+    const finalTotal = Math.round((subtotal - discountAmount) * 100) / 100;
+
+    return {
+      valid: true,
+      codigo,
+      discountType: c.discountType,
+      value: c.value,
+      discountAmount: Math.round(discountAmount * 100) / 100,
+      finalTotal
+    };
+  }
+
+  const CUPON_ERRORES = {
+    EMPTY: "Ingresá un código.",
+    NOT_FOUND: "Ese cupón no existe.",
+    INACTIVE: "Ese cupón ya no está activo.",
+    EXPIRED: "Ese cupón venció.",
+    LIMIT: "Ese cupón llegó a su límite de usos."
+  };
+
+  const WHATSAPP_NEXO = "5492634273255";
+
+  function formatearPrecio(numero) {
+    const n = Number(numero) || 0;
+    return "$" + n.toLocaleString("es-AR");
+  }
+
+  // -----------------------------
+  // Tira de plataformas (filtro rápido, estilo app).
+  // Cada chip filtra el catálogo por palabra clave en el nombre del producto.
+  // Los ícono se leen de /assets — si falta el archivo, el chip igual
+  // funciona, solo que sin ícono.
+  // -----------------------------
+  const PLATAFORMAS = [
+    { id: "todos", label: "Todos" },
+    { id: "netflix", label: "Netflix", icono: "assets/netflix.png", palabra: "netflix" },
+    { id: "hbo", label: "HBO", icono: "assets/hbo.png", palabra: "hbo" },
+    { id: "disney", label: "Disney+", icono: "assets/disneyplus.png", palabra: "disney" },
+    { id: "prime", label: "Prime Video", icono: "assets/primevideo.png", palabra: "prime" },
+    { id: "crunchyroll", label: "Crunchyroll", icono: "assets/crunchyroll.png", palabra: "crunchyroll" },
+    { id: "spotify", label: "Spotify", icono: "assets/spotify.png", palabra: "spotify" },
+    { id: "seguidores", label: "Seguidores", palabra: "seguidor" }
+  ];
+
+  let filtroActivo = "todos";
+  let textoBusqueda = "";
+  let productosCache = [];
+
+  const chipsContenedor = document.getElementById("chips-plataforma");
+
+  PLATAFORMAS.forEach((plataforma) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.dataset.filtro = plataforma.id;
+    chip.className =
+      "chip shrink-0 flex items-center gap-1.5 border border-line bg-panel2 text-[11px] font-semibold text-mute px-3 py-2 rounded-full whitespace-nowrap transition-colors" +
+      (plataforma.id === "todos" ? " chip-activo" : "");
+
+    if (plataforma.icono) {
+      const icono = document.createElement("img");
+      icono.src = plataforma.icono;
+      icono.alt = "";
+      icono.className = "w-4 h-4 rounded-full object-cover";
+      icono.onerror = () => icono.remove();
+      chip.appendChild(icono);
+    }
+
+    const texto = document.createElement("span");
+    texto.textContent = plataforma.label;
+    chip.appendChild(texto);
+
+    chip.addEventListener("click", () => {
+      filtroActivo = plataforma.id;
+      document.querySelectorAll(".chip").forEach((c) => c.classList.remove("chip-activo"));
+      chip.classList.add("chip-activo");
+      aplicarFiltroYRenderizar();
+    });
+
+    chipsContenedor.appendChild(chip);
+  });
+
+  function productoCoincideConFiltro(producto) {
+    if (filtroActivo === "todos") return true;
+    const plataforma = PLATAFORMAS.find((p) => p.id === filtroActivo);
+    if (!plataforma || !plataforma.palabra) return true;
+    const nombre = (producto.nombre || "").toLowerCase();
+    const categoria = (producto.categoria || "").toLowerCase();
+    return nombre.includes(plataforma.palabra) || categoria.includes(plataforma.palabra);
+  }
+
+  function productoCoincideConBusqueda(producto) {
+    if (!textoBusqueda) return true;
+    const texto = textoBusqueda.toLowerCase();
+    const nombre = (producto.nombre || "").toLowerCase();
+    const descripcion = (producto.descripcion || "").toLowerCase();
+    return nombre.includes(texto) || descripcion.includes(texto);
+  }
+
+  const inputBuscarCatalogo = document.getElementById("input-buscar-catalogo");
+  inputBuscarCatalogo.addEventListener("input", () => {
+    textoBusqueda = inputBuscarCatalogo.value.trim();
+    aplicarFiltroYRenderizar();
+  });
+
+  // -----------------------------
+  // Imagen del producto: soporta URL externa (http/https) o ruta local
+  // del repositorio (./netflix.jpg, assets/netflix.jpg, etc). Si no hay
+  // imagen o falla la carga, se muestra un fallback con el logo NEXO.
+  // -----------------------------
+  function pintarImagenProducto(nodo, producto) {
+    const imagenEl = nodo.querySelector('[data-field="imagen"]');
+    const fallbackEl = nodo.querySelector('[data-field="imagen-fallback"]');
+    const ruta = (producto.imagen || "").trim();
+
+    if (!ruta) {
+      imagenEl.classList.add("hidden-modal");
+      fallbackEl.classList.remove("hidden-modal");
+      return;
+    }
+
+    // Tanto una URL externa (http/https) como una ruta local relativa
+    // (./netflix.jpg, netflix.jpg, assets/netflix.jpg) funcionan tal cual
+    // en el atributo src — el navegador resuelve la ruta relativa solo.
+    imagenEl.src = ruta;
+    imagenEl.alt = producto.nombre || "";
+    fallbackEl.classList.add("hidden-modal");
+    imagenEl.classList.remove("hidden-modal");
+
+    imagenEl.onerror = () => {
+      imagenEl.classList.add("hidden-modal");
+      fallbackEl.classList.remove("hidden-modal");
+    };
+  }
+
+  // -----------------------------
+  // Orden manual: se define desde el admin (campo "orden", número).
+  // Menor número aparece primero. Sin orden asignado = 0.
+  // -----------------------------
+  function ordenarPorOrden(a, b) {
+    const oa = Number(a.orden) || 0;
+    const ob = Number(b.orden) || 0;
+    if (oa !== ob) return oa - ob;
+    return (a.nombre || "").localeCompare(b.nombre || "");
+  }
+
+  function renderTablaSeguidores(lista) {
+    const tbody = document.getElementById("tabla-seguidores");
+    const vacio = document.getElementById("tabla-seguidores-vacio");
+    const tpl = document.getElementById("tpl-seguidor-fila");
+    tbody.innerHTML = "";
+
+    const listaFiltrada = lista.filter((p) => productoCoincideConFiltro(p) && productoCoincideConBusqueda(p));
+
+    if (listaFiltrada.length === 0) {
+      vacio.textContent =
+        lista.length === 0 ? "Sin paquetes disponibles por el momento." : "No hay resultados para tu búsqueda.";
+      vacio.classList.remove("hidden-modal");
+      return;
+    }
+    vacio.classList.add("hidden-modal");
+
+    listaFiltrada.forEach((producto) => {
+      const nodo = tpl.content.cloneNode(true);
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre;
+      nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion || "";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const btn = nodo.querySelector('[data-field="btn"]');
+      const hayStock = producto.hayStock !== false;
+
+      if (hayStock) {
+        btn.addEventListener("click", () => abrirModalPedido(producto));
+      } else {
+        btn.textContent = "Sin stock";
+        btn.disabled = true;
+      }
+
+      tbody.appendChild(nodo);
+    });
+  }
+
+  function renderCatalogo(lista, contenedorId) {
+    const contenedor = document.getElementById(contenedorId);
+    const tpl = document.getElementById("tpl-producto");
+    contenedor.innerHTML = "";
+
+    const listaFiltrada = lista.filter((p) => productoCoincideConFiltro(p) && productoCoincideConBusqueda(p));
+
+    if (listaFiltrada.length === 0) {
+      const vacio = document.createElement("p");
+      vacio.className = "text-mute text-xs col-span-full";
+      vacio.textContent =
+        lista.length === 0
+          ? "Sin productos disponibles por el momento."
+          : "No hay resultados para tu búsqueda o filtro.";
+      contenedor.appendChild(vacio);
+      return;
+    }
+
+    listaFiltrada.forEach((producto) => {
+      const nodo = tpl.content.cloneNode(true);
+
+      pintarImagenProducto(nodo, producto);
+
+      nodo.querySelector('[data-field="nombre"]').textContent = producto.nombre;
+      nodo.querySelector('[data-field="descripcion"]').textContent = producto.descripcion || "";
+      nodo.querySelector('[data-field="precio"]').textContent = formatearPrecio(producto.precio);
+
+      const btn = nodo.querySelector('[data-field="btn"]');
+      const badgeStock = nodo.querySelector('[data-field="badge-stock"]');
+      const cardEl = nodo.querySelector('[data-field="card"]');
+      const hayStock = producto.hayStock !== false;
+
+      if (hayStock) {
+        btn.addEventListener("click", () => abrirModalPedido(producto));
+      } else {
+        badgeStock.classList.remove("hidden-modal");
+        cardEl.classList.add("pack-card--oos");
+        btn.textContent = "Sin stock";
+        btn.disabled = true;
+      }
+
+      contenedor.appendChild(nodo);
+    });
+  }
+
+  function aplicarFiltroYRenderizar() {
+    const streaming = productosCache.filter((p) => p.categoria === "streaming").sort(ordenarPorOrden);
+    const seguidores = productosCache.filter((p) => p.categoria === "seguidores").sort(ordenarPorOrden);
+    renderCatalogo(streaming, "grid-streaming");
+    renderTablaSeguidores(seguidores);
+  }
+
+  function iniciarEscuchaCatalogo() {
+    onSnapshot(productosRef, (snapshot) => {
+      productosCache = snapshot.docs
+        .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+        .filter((producto) => producto.visible !== false);
+
+      aplicarFiltroYRenderizar();
+    });
+  }
+
+  iniciarEscuchaCatalogo();
+
+  // -----------------------------
+  // Modal de pedido rápido
+  // -----------------------------
+  const modal = document.getElementById("modal-pedido");
+  const resumenNombre = document.getElementById("resumen-nombre");
+  const resumenPrecio = document.getElementById("resumen-precio");
+  const resumenPrecioDescuento = document.getElementById("resumen-precio-descuento");
+  const formPedido = document.getElementById("form-pedido");
+  const inputNombre = document.getElementById("input-nombre");
+  const camposSeguidor = document.getElementById("campos-seguidor");
+  const inputLinkCuenta = document.getElementById("input-link-cuenta");
+  const pedidoStatus = document.getElementById("pedido-status");
+  const btnConfirmar = document.getElementById("btn-confirmar");
+  const inputAceptaTerminos = document.getElementById("input-acepta-terminos");
+  const inputCodigoDescuento = document.getElementById("codigoDescuento");
+  const btnAplicarDescuento = document.getElementById("btn-aplicar-descuento");
+  const descuentoStatus = document.getElementById("descuento-status");
+  const resumenCupon = document.getElementById("resumen-cupon");
+  const resumenCuponMonto = document.getElementById("resumen-cupon-monto");
+  const resumenCuponTotal = document.getElementById("resumen-cupon-total");
+
+  let productoSeleccionado = null;
+  let precioFinalActual = 0;
+  let descuentoAplicado = null; // { codigo, precioFinal, montoDescontado? } — código admin o cupón
+
+  function limpiarDescuento() {
+    descuentoAplicado = null;
+    inputCodigoDescuento.value = "";
+    descuentoStatus.textContent = "";
+    descuentoStatus.classList.remove("text-bad", "text-cyan", "text-ok");
+    resumenCupon.classList.add("hidden-modal");
+  }
+
+  // -----------------------------
+  // Descuento unificado: primero intenta contra el código único del admin
+  // (configuracion/descuento) y, si no coincide, contra la colección "cupones".
+  // -----------------------------
+  function actualizarResumenPrecio() {
+    if (!productoSeleccionado) return;
+    precioFinalActual = descuentoAplicado ? descuentoAplicado.precioFinal : productoSeleccionado.precio;
+
+    if (descuentoAplicado) {
+      resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
+      resumenPrecio.classList.add("line-through", "text-mute", "text-sm", "font-normal");
+      resumenPrecio.classList.remove("text-cyan", "text-lg", "font-bold");
+      resumenPrecioDescuento.textContent =
+        `${formatearPrecio(precioFinalActual)} · código ${descuentoAplicado.codigo}`;
+      resumenPrecioDescuento.classList.remove("hidden-modal");
+    } else {
+      resumenPrecio.textContent = formatearPrecio(productoSeleccionado.precio);
+      resumenPrecio.classList.remove("line-through", "text-mute", "text-sm", "font-normal");
+      resumenPrecio.classList.add("text-cyan", "text-lg", "font-bold");
+      resumenPrecioDescuento.classList.add("hidden-modal");
+    }
+  }
+
+  btnAplicarDescuento.addEventListener("click", async () => {
+    const codigoIngresado = inputCodigoDescuento.value.trim().toUpperCase();
+    descuentoStatus.classList.remove("text-bad", "text-cyan", "text-ok");
+    descuentoStatus.textContent = "";
+    resumenCupon.classList.add("hidden-modal");
+    descuentoAplicado = null;
+
+    if (!codigoIngresado) {
+      descuentoStatus.textContent = "Ingresá un código.";
+      descuentoStatus.classList.add("text-bad");
+      actualizarResumenPrecio();
+      return;
+    }
+
+    btnAplicarDescuento.disabled = true;
+    const textoOriginal = btnAplicarDescuento.textContent;
+    btnAplicarDescuento.textContent = "Verificando...";
+
+    try {
+      // 1) Código único de descuento (admin -> Finanzas)
+      const snap = await getDoc(configuracionRef);
+      const data = snap.exists() ? snap.data() : {};
+      const codigoGuardado = (data.codigo || "").trim().toUpperCase();
+      const porcentaje = Number(data.porcentaje) || 0;
+      const activo = data.activo === true;
+      const productoId = data.productoId || "todos";
+      const aplicaAlProducto = productoId === "todos" || productoId === productoSeleccionado.id;
+
+      if (activo && codigoGuardado && codigoGuardado === codigoIngresado && porcentaje > 0 && aplicaAlProducto) {
+        const precioFinal = Math.max(0, Math.round(productoSeleccionado.precio * (1 - porcentaje / 100)));
+        descuentoAplicado = { codigo: codigoGuardado, precioFinal };
+        descuentoStatus.textContent = `Código aplicado: -${porcentaje}% de descuento.`;
+        descuentoStatus.classList.add("text-cyan");
+      } else {
+        // 2) Cupón (colección "cupones")
+        const resultado = await validarCupon(codigoIngresado, productoSeleccionado.precio);
+        if (resultado.valid) {
+          descuentoAplicado = {
+            codigo: resultado.codigo,
+            precioFinal: resultado.finalTotal,
+            montoDescontado: resultado.discountAmount
+          };
+          resumenCuponMonto.textContent = "-" + formatearPrecio(resultado.discountAmount);
+          resumenCuponTotal.textContent = formatearPrecio(resultado.finalTotal);
+          resumenCupon.classList.remove("hidden-modal");
+          descuentoStatus.textContent = `Cupón ${resultado.codigo} aplicado.`;
+          descuentoStatus.classList.add("text-ok");
+        } else {
+          descuentoStatus.textContent = "Código o cupón inválido.";
+          descuentoStatus.classList.add("text-bad");
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      descuentoAplicado = null;
+      descuentoStatus.textContent = "No se pudo verificar el código. Intentá de nuevo.";
+      descuentoStatus.classList.add("text-bad");
+    } finally {
+      actualizarResumenPrecio();
+      btnAplicarDescuento.disabled = false;
+      btnAplicarDescuento.textContent = textoOriginal;
+    }
+  });
+
+  function abrirModalPedido(producto) {
+    productoSeleccionado = producto;
+    resumenNombre.textContent = producto.nombre;
+    pedidoStatus.textContent = "";
+    formPedido.reset();
+
+    limpiarDescuento();
+    actualizarResumenPrecio();
+
+    const esSeguidor = producto.categoria === "seguidores";
+    if (esSeguidor) {
+      camposSeguidor.classList.remove("hidden-modal");
+      camposSeguidor.classList.add("flex");
+      inputLinkCuenta.setAttribute("required", "required");
+    } else {
+      camposSeguidor.classList.add("hidden-modal");
+      camposSeguidor.classList.remove("flex");
+      inputLinkCuenta.removeAttribute("required");
+    }
+
+    modal.classList.remove("hidden-modal");
+    modal.classList.add("flex");
+  }
+
+  function cerrarModalPedido() {
+    modal.classList.add("hidden-modal");
+    modal.classList.remove("flex");
+  }
+
+  document.querySelectorAll("[data-close-modal]").forEach((btn) => {
+    btn.addEventListener("click", cerrarModalPedido);
+  });
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) cerrarModalPedido();
+  });
+
+  formPedido.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!productoSeleccionado) return;
+
+    const nombre = inputNombre.value.trim();
+    const esSeguidor = productoSeleccionado.categoria === "seguidores";
+    const linkCuenta = esSeguidor ? inputLinkCuenta.value.trim() : "";
+
+    if (esSeguidor && !linkCuenta) {
+      pedidoStatus.textContent = "Falta el link o usuario de tu cuenta.";
+      return;
+    }
+
+    if (!inputAceptaTerminos.checked) {
+      pedidoStatus.textContent = "Tenés que aceptar los Términos y condiciones para continuar.";
+      return;
+    }
+
+    btnConfirmar.disabled = true;
+    btnConfirmar.textContent = "Guardando...";
+    pedidoStatus.textContent = "";
+
+    const precioOriginal = productoSeleccionado.precio;
+    const precioAPagar = descuentoAplicado ? descuentoAplicado.precioFinal : precioOriginal;
+
+    const datosPedido = {
+      nombre,
+      servicio: productoSeleccionado.nombre,
+      precio: precioAPagar,
+      precioOriginal,
+      estado: "espera",
+      pagado: false,
+      fecha: serverTimestamp()
+    };
+
+    if (descuentoAplicado) {
+      datosPedido.codigoDescuento = descuentoAplicado.codigo;
+      if (descuentoAplicado.montoDescontado != null) {
+        datosPedido.cuponDescuento = descuentoAplicado.montoDescontado;
+      }
+    }
+
+    if (esSeguidor) {
+      datosPedido.linkCuenta = linkCuenta;
+      datosPedido.tipoCuenta = "publica";
+    }
+
+    // Guardar en Firestore, pero sin dejar al cliente trabado si la base
+    // de datos tarda o falla (red lenta, bloqueadores, permisos, etc.):
+    // después de 6s seguimos igual hacia WhatsApp, que es lo que
+    // realmente concreta el pedido. El guardado sigue en curso en
+    // segundo plano aunque ya se haya navegado.
+    try {
+      await Promise.race([
+        addDoc(pedidosRef, datosPedido),
+        new Promise((resolve) => setTimeout(resolve, 6000))
+      ]);
+    } catch (err) {
+      console.error("No se pudo confirmar el guardado del pedido, se continúa por WhatsApp:", err);
+    }
+
+    if (descuentoAplicado && descuentoAplicado.montoDescontado != null) {
+      try {
+        await updateDoc(doc(db, "cupones", descuentoAplicado.codigo), { usedCount: increment(1) });
+      } catch (err) {
+        console.error("No se pudo incrementar el uso del cupón:", err);
+      }
+    }
+
+    let mensaje =
+      `Hola NEXO! Quiero encargar ${productoSeleccionado.nombre} por ${formatearPrecio(precioAPagar)}. ` +
+      `Mi nombre es ${nombre}.`;
+
+    if (descuentoAplicado) {
+      mensaje += ` Usé el código ${descuentoAplicado.codigo} (precio normal ${formatearPrecio(precioOriginal)}).`;
+    }
+
+    if (esSeguidor) {
+      mensaje += ` Mi cuenta: ${linkCuenta} (pública).`;
+    }
+
+    const url = `https://wa.me/${WHATSAPP_NEXO}?text=${encodeURIComponent(mensaje)}`;
+    window.location.href = url;
+  });
+</script>
+
+<!-- ============ POPUP: UNITE AL GRUPO DE WHATSAPP ============ -->
+<div id="whatsapp-popup" class="hidden-modal fixed inset-0 z-[70] items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+  <div class="glass border border-line max-w-sm w-full clip-corner glow-border p-6 relative">
+    <button id="btn-cerrar-popup-wsp" aria-label="Cerrar" class="absolute top-3 right-3 text-mute hover:text-cyan transition-colors text-xl leading-none">&times;</button>
+
+    <div class="flex items-center gap-3 mb-4 pr-6">
+      <div class="w-11 h-11 rounded-full flex items-center justify-center shrink-0" style="background: linear-gradient(135deg,#25D366,#128C7E);">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="#08050f"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.08L2 22l5.09-1.33A9.94 9.94 0 0 0 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.28 1.2-1.77 1.24-.45.05-.9.22-3.02-.63-2.56-1.02-4.2-3.6-4.33-3.77-.13-.17-1.03-1.37-1.03-2.6 0-1.24.65-1.85.88-2.1.23-.25.5-.3.67-.3h.48c.15 0 .36-.06.56.43.22.53.75 1.83.82 1.96.07.13.11.28.02.45-.09.17-.14.28-.27.43-.13.15-.28.34-.4.46-.13.13-.27.28-.12.55.16.27.7 1.15 1.5 1.86 1.03.92 1.9 1.2 2.17 1.34.27.13.43.11.6-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.6-.13.25.09 1.57.74 1.84.87.27.13.45.2.51.31.07.11.07.63-.15 1.25z"/></svg>
+      </div>
+      <div>
+        <p class="font-display font-bold text-base leading-tight">Unite a nuestro grupo de WhatsApp</p>
+        <p class="text-[11px] text-mute">NEXO STORE</p>
+      </div>
+    </div>
+
+    <p class="text-sm text-mute leading-relaxed mb-5">
+      Enterate primero de ofertas, descuentos y novedades. Sumate al grupo y no te pierdas nada.
+    </p>
+
+    <a href="https://chat.whatsapp.com/Gle8XKDprpVGwBhKdBuVJg" target="_blank" rel="noopener"
+      class="block w-full text-center font-display font-semibold text-sm px-4 py-3 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors clip-corner">
+      Unirme al grupo
+    </a>
+
+    <button id="btn-luego-popup-wsp" class="w-full text-center text-[11px] text-mute/70 hover:text-mute transition-colors mt-3">
+      Ahora no
+    </button>
+  </div>
+</div>
+<script>
+  (function () {
+    const KEY = "nexo_wsp_popup_visto";
+    const popup = document.getElementById("whatsapp-popup");
+    const btnCerrar = document.getElementById("btn-cerrar-popup-wsp");
+    const btnLuego = document.getElementById("btn-luego-popup-wsp");
+    if (!popup) return;
+
+    function ocultarPopup() {
+      popup.classList.add("hidden-modal");
+      popup.classList.remove("flex");
+    }
+
+    function mostrarPopup() {
+      popup.classList.remove("hidden-modal");
+      popup.classList.add("flex");
+    }
+
+    function cerrarYRecordar() {
+      ocultarPopup();
+      try {
+        localStorage.setItem(KEY, Date.now().toString());
+      } catch (e) {}
+    }
+
+    btnCerrar && btnCerrar.addEventListener("click", cerrarYRecordar);
+    btnLuego && btnLuego.addEventListener("click", cerrarYRecordar);
+    popup.addEventListener("click", (e) => {
+      if (e.target === popup) cerrarYRecordar();
+    });
+
+    let mostrarDeNuevo = true;
+    try {
+      const visto = localStorage.getItem(KEY);
+      if (visto) {
+        const dias = (Date.now() - Number(visto)) / (1000 * 60 * 60 * 24);
+        mostrarDeNuevo = dias > 3; // vuelve a aparecer a los 3 días si no se unió
+      }
+    } catch (e) {}
+
+    if (mostrarDeNuevo) {
+      setTimeout(mostrarPopup, 2500); // aparece a los 2.5s de cargar la página
+    }
+  })();
+</script>
+
+<!-- ============ AVISO DE COOKIES (mini) ============ -->
+<div id="cookie-banner" class="hidden-modal fixed inset-x-0 bottom-0 z-[60] p-3 md:p-4">
+  <div class="glass border border-line max-w-2xl mx-auto px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 clip-corner">
+    <p class="text-[11px] text-mute leading-relaxed flex-1">
+      Usamos cookies básicas para que el sitio funcione bien y para estadísticas de uso.
+      <a href="legal/#privacidad" class="text-cyan hover:underline">Más info</a>.
+    </p>
+    <button id="btn-cookie-ok"
+      class="shrink-0 text-[11px] font-display font-semibold px-4 py-2 border border-violet text-violet2 hover:bg-violet hover:text-bg transition-colors">
+      Entendido
+    </button>
+  </div>
+</div>
+<script>
+  (function () {
+    const KEY = "nexo_cookies_ok";
+    const banner = document.getElementById("cookie-banner");
+    const btn = document.getElementById("btn-cookie-ok");
+    if (!banner || !btn) return;
+    if (!localStorage.getItem(KEY)) {
+      banner.classList.remove("hidden-modal");
+    }
+    btn.addEventListener("click", () => {
+      localStorage.setItem(KEY, "1");
+      banner.classList.add("hidden-modal");
+    });
+  })();
+</script>
+</body>
+</html>

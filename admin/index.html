@@ -4,10 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>NEXO STORE — Panel de administración</title>
-<link rel="icon" href="favicon.ico" sizes="any" />
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png" />
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
+<link rel="icon" href="../favicon.ico" sizes="any" />
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png" />
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png" />
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -62,7 +62,7 @@
   <div class="w-full max-w-sm bg-panel border border-line clip-corner glow-border p-6">
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
-        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-base leading-none">NEXO</p>
@@ -127,7 +127,7 @@
   <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 rounded-full border-2 border-violet overflow-hidden shrink-0">
-        <img src="assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
+        <img src="../assets/logo.png" alt="NEXO" class="w-full h-full object-cover" width="40" height="40" loading="eager" />
       </div>
       <div>
         <p class="font-display font-bold text-base leading-none">NEXO</p>
@@ -486,6 +486,42 @@
         </button>
       </form>
     </div>
+
+    <div class="border border-line bg-panel clip-corner p-6 mt-6">
+      <p class="text-cyan text-xs tracking-[0.2em] font-semibold mb-1">DESCUENTOS</p>
+      <h3 class="font-display font-bold text-xl mb-5">Nuevo código de descuento</h3>
+
+      <form id="form-nuevo-descuento" class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs text-mute block mb-1.5">Nombre del código</label>
+          <input required id="nuevo-descuento-nombre" type="text" placeholder="Ej: VERANO25"
+            class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Tipo</label>
+            <select id="nuevo-descuento-tipo"
+              class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
+              <option value="percentage">Porcentaje (%)</option>
+              <option value="fixed">Monto fijo ($)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-mute block mb-1.5">Valor</label>
+            <input required id="nuevo-descuento-valor" type="number" min="0" step="0.01" placeholder="10"
+              class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan" />
+          </div>
+        </div>
+
+        <p id="nuevo-descuento-status" class="text-xs text-mute min-h-[1rem]"></p>
+
+        <button type="submit" id="btn-guardar-nuevo-descuento"
+          class="w-full bg-gradient-to-r from-violet to-cyan text-bg font-display font-bold text-sm py-3 mt-1 hover:opacity-90 transition-opacity">
+          Crear código
+        </button>
+      </form>
+    </div>
   </div>
 </main>
 
@@ -508,7 +544,6 @@
       <thead>
         <tr class="text-left text-[11px] text-mute border-b border-line">
           <th class="px-4 py-3 font-medium">Código</th>
-          <th class="px-4 py-3 font-medium">Producto</th>
           <th class="px-4 py-3 font-medium">Descuento</th>
           <th class="px-4 py-3 font-medium">Vence</th>
           <th class="px-4 py-3 font-medium">Usados</th>
@@ -530,7 +565,6 @@
 <template id="tpl-fila-cupon">
   <tr class="hover:bg-panel2/60 transition-colors align-middle">
     <td class="px-4 py-3 font-display font-bold text-ink" data-field="codigo"></td>
-    <td class="px-4 py-3 text-mute text-xs" data-field="producto"></td>
     <td class="px-4 py-3" data-field="descuento"></td>
     <td class="px-4 py-3 text-mute text-xs" data-field="vence"></td>
     <td class="px-4 py-3 text-mute" data-field="usados"></td>
@@ -552,7 +586,6 @@
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
         <p class="font-display font-bold text-sm text-ink truncate" data-field="codigo"></p>
-        <p class="text-xs text-mute mt-0.5" data-field="producto"></p>
         <p class="text-xs text-mute mt-0.5" data-field="descuento"></p>
         <p class="text-[11px] text-mute mt-0.5" data-field="vence-usados"></p>
       </div>
@@ -578,13 +611,6 @@
         <input required id="cupon-codigo" type="text" placeholder="BIENVENIDO10"
           class="w-full bg-panel2 border border-line px-3 py-2.5 text-sm uppercase placeholder:text-mute/60 focus:outline-none focus:border-cyan" />
         <p id="cupon-codigo-nota" class="text-[10px] text-mute/70 mt-1"></p>
-      </div>
-      <div>
-        <label class="text-xs text-mute block mb-1.5">Aplicar a</label>
-        <select id="cupon-producto"
-          class="estado-select w-full bg-panel2 border border-line px-3 py-2.5 text-sm focus:outline-none focus:border-cyan">
-          <option value="todos">Todos los productos</option>
-        </select>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
@@ -1077,8 +1103,9 @@
     auth,
     db,
     loginConGoogle,
-    loginAnonimo
-  } from "./firebase.js";
+    loginAnonimo,
+    crearCodigoDescuento
+  } from "../firebase.js";
   import {
     setPersistence,
     browserSessionPersistence,
@@ -2102,7 +2129,6 @@
       descuentoProducto.appendChild(opt);
     });
     aplicarSeleccionProductoDescuento();
-    actualizarOpcionesProductoCupon();
   }
 
   function iniciarEscuchaDescuento() {
@@ -2146,6 +2172,43 @@
     } finally {
       btnGuardarDescuento.disabled = false;
       btnGuardarDescuento.textContent = "Guardar";
+    }
+  });
+
+  // -----------------------------
+  // DESCUENTOS: creación de nuevos códigos (colección "descuentos")
+  // -----------------------------
+  const formNuevoDescuento = document.getElementById("form-nuevo-descuento");
+  const nuevoDescuentoNombre = document.getElementById("nuevo-descuento-nombre");
+  const nuevoDescuentoTipo = document.getElementById("nuevo-descuento-tipo");
+  const nuevoDescuentoValor = document.getElementById("nuevo-descuento-valor");
+  const nuevoDescuentoStatus = document.getElementById("nuevo-descuento-status");
+  const btnGuardarNuevoDescuento = document.getElementById("btn-guardar-nuevo-descuento");
+
+  formNuevoDescuento.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    btnGuardarNuevoDescuento.disabled = true;
+    btnGuardarNuevoDescuento.textContent = "Guardando...";
+    nuevoDescuentoStatus.textContent = "";
+    nuevoDescuentoStatus.className = "text-xs text-mute min-h-[1rem]";
+
+    try {
+      await crearCodigoDescuento({
+        nombre: nuevoDescuentoNombre.value,
+        tipo: nuevoDescuentoTipo.value,
+        valor: nuevoDescuentoValor.value
+      });
+      nuevoDescuentoStatus.textContent = "Código creado correctamente.";
+      nuevoDescuentoStatus.className = "text-xs text-cyan min-h-[1rem]";
+      formNuevoDescuento.reset();
+    } catch (err) {
+      console.error(err);
+      nuevoDescuentoStatus.textContent = err.message || "No se pudo crear el código. Intentá de nuevo.";
+      nuevoDescuentoStatus.className = "text-xs text-bad min-h-[1rem]";
+    } finally {
+      btnGuardarNuevoDescuento.disabled = false;
+      btnGuardarNuevoDescuento.textContent = "Crear código";
     }
   });
 
@@ -2515,27 +2578,6 @@
     });
   }
 
-  const cuponProducto = document.getElementById("cupon-producto");
-  let cuponProductoActual = "todos";
-
-  function actualizarOpcionesProductoCupon() {
-    if (!cuponProducto) return;
-    const valorActual = cuponProducto.value || cuponProductoActual;
-    cuponProducto.innerHTML = '<option value="todos">Todos los productos</option>';
-    productosCache.forEach((p) => {
-      const opt = document.createElement("option");
-      opt.value = p.id;
-      opt.textContent = p.nombre || "(sin nombre)";
-      cuponProducto.appendChild(opt);
-    });
-    const existe = Array.from(cuponProducto.options).some((o) => o.value === valorActual);
-    cuponProducto.value = existe ? valorActual : "todos";
-  }
-
-  function formatearProductoCupon(c) {
-    return (c.productoId || "todos") === "todos" ? "Todos los productos" : (c.productoNombre || "Producto eliminado");
-  }
-
   function formatearDescuentoCupon(c) {
     return c.discountType === "percentage" ? `${c.value}%` : formatearPrecio(c.value);
   }
@@ -2557,7 +2599,6 @@
 
       const fila = tplFilaCupon.content.cloneNode(true);
       fila.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
-      fila.querySelector('[data-field="producto"]').textContent = formatearProductoCupon(cupon);
       fila.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
       fila.querySelector('[data-field="vence"]').textContent = formatearFechaCortaCupon(cupon.validUntil);
       fila.querySelector('[data-field="usados"]').textContent = usadosTexto;
@@ -2578,7 +2619,6 @@
 
       const tarjeta = tplTarjetaCupon.content.cloneNode(true);
       tarjeta.querySelector('[data-field="codigo"]').textContent = cupon.codigo;
-      tarjeta.querySelector('[data-field="producto"]').textContent = formatearProductoCupon(cupon);
       tarjeta.querySelector('[data-field="descuento"]').textContent = formatearDescuentoCupon(cupon);
       tarjeta.querySelector('[data-field="vence-usados"]').textContent =
         `Vence: ${formatearFechaCortaCupon(cupon.validUntil)} · Usados: ${usadosTexto}`;
@@ -2631,8 +2671,6 @@
       cuponVence.value = cupon.validUntil || "";
       cuponLimite.value = cupon.usageLimit ?? "";
       cuponActivo.checked = cupon.active !== false;
-      cuponProductoActual = cupon.productoId || "todos";
-      actualizarOpcionesProductoCupon();
     } else {
       cuponEnEdicionCodigo = null;
       modalCuponEyebrow.textContent = "NUEVO CUPÓN";
@@ -2641,8 +2679,6 @@
       cuponCodigoNota.textContent = "";
       cuponTipo.value = "percentage";
       cuponActivo.checked = true;
-      cuponProductoActual = "todos";
-      actualizarOpcionesProductoCupon();
     }
 
     modalCupon.classList.remove("hidden-modal");
@@ -2661,20 +2697,12 @@
   formCupon.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const productoIdSeleccionado = cuponProducto ? cuponProducto.value : "todos";
-    const productoNombreSeleccionado =
-      productoIdSeleccionado === "todos"
-        ? ""
-        : cuponProducto.options[cuponProducto.selectedIndex].textContent;
-
     const datos = {
       discountType: cuponTipo.value,
       value: Number(cuponValor.value) || 0,
       validUntil: cuponVence.value,
       usageLimit: Number(cuponLimite.value) || 1,
-      active: cuponActivo.checked,
-      productoId: productoIdSeleccionado,
-      productoNombre: productoNombreSeleccionado
+      active: cuponActivo.checked
     };
 
     btnGuardarCupon.disabled = true;
@@ -2702,3 +2730,4 @@
 </script>
 </body>
 </html>
+
